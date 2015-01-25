@@ -1,0 +1,8 @@
+---
+title: "UserManual"
+author: "Yan Yan"
+date: "January 25, 2015"
+output: html_document
+---
+
+This page use a decision tree to predict the species, the left box can be filled by numerical values, after the filling process, submit with the button, the results would be illustrated.
