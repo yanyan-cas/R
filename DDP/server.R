@@ -17,7 +17,8 @@ category <- function(a,b,c,d){
 
 shinyServer(
         function(input, output) {
-        output$Species <- renderPrint({category(input$Sepal.Length,
-                                                input$Sepal.Width, input$Petal.Length, input$Petal.Width)})
+        output$Species <- renderText({
+                input$goButton
+                isolate(category(input$Sepal.Length,input$Sepal.Width, input$Petal.Length, input$Petal.Width))})
 }
 )
