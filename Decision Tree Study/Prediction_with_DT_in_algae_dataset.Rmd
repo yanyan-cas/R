@@ -1,0 +1,24 @@
+---
+title: "Prediction with decision tree method in algae dataset."
+author: "Yan Yan"
+date: "February 22, 2015"
+output: pdf_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(DMwR)
+library(car)
+
+par(mfrow=c(1,2))
+par(mfrow=c(1,2))
+hist(algae$mxPH, prob=T, xlab='', main='Histogram of maixmum pH value', ylim=0:1)
+lines(density(algae$mxPH, na.rm=T))
+rug(jitter(algae$mxPH))
+qq.plot(algae$mxPH, main='Normal QQ plot of maximum pH')
+par(mfrow=c(1,2))
+
+```
