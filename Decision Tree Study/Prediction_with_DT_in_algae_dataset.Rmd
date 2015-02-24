@@ -5,20 +5,127 @@ date: "February 22, 2015"
 output: pdf_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r}
 library(DMwR)
 library(car)
 
-par(mfrow=c(1,2))
-par(mfrow=c(1,2))
+#par(mfrow=c(1,2))
 hist(algae$mxPH, prob=T, xlab='', main='Histogram of maixmum pH value', ylim=0:1)
-lines(density(algae$mxPH, na.rm=T))
-rug(jitter(algae$mxPH))
-qq.plot(algae$mxPH, main='Normal QQ plot of maximum pH')
-par(mfrow=c(1,2))
 
+# A smoothed version of hist graph
+lines(density(algae$mxPH, na.rm=T)) 
+
+#rug() used for plotting, jitter() randomized the original value to avoid overlap
+rug(jitter(algae$mxPH)) 
+
+#Q-Q graph, plot the scatterplot of value and Normal Distribution quantiles,
+#and then the band chart of 95% confidence interval
+qqPlot(algae$mxPH, main='Normal QQ plot of maximum pH') 
+#par(mfrow=c(1,2))
+
+#Boxplot of oPO4, the line in the middle of the box is the median, the upper 
+#boudary is the 3rd quantiles and the lower boundary is the 1st quantile.
+boxplot(algae$oPO4, ylab = "Orthophosphate(oPO4)")
+
+rug(jitter(algae$oPO4), side=2)
+#Plot the average value line in the Boxplot
+abline(h = mean(algae$oPO4, na.rm = T), lty = 2)
+```
+
+We can see the the distribution of oPO4 is concentrated in the lower values, so it is positive-skewed.
+
+For the sperated values, we can handle with the following method.
+```{r}
+plot(algae$NH4, xlab = " ")
+abline(h = mean(algae$NH4, na.rm = T), lty = 1) #avarage value
+abline(h = mean(algae$NH4, na.rm = T) + sd(algae$NH4, na.rm = T), lty = 2)
+abline(h = median(algae$NH4, na.rm = T), lty = 3) #median
+#A interact method can be realized by using identify() function
+#identify(algae$NH4)
+#clicked.lines <- identify(algae$NH4)
+#algae[clicked.lines]
+```
+To find how the distribution varies due to other variables.
+
+```{r}
+library(lattice)
+bwplot(size ~ a1, data=algae, ylab = 'River Size', xlab = 'Algal A1')
+```
+
+Also we can use the quantile box plot
+
+```{r}
+library(Hmisc)
+bwplot(size ~ a1, data = algae, panel = panel.bpplot, 
+       probs = seq(.01, .49, by = .01), datadensity = TRUE, 
+       ylab = 'River Size', xlab = 'Algal A1')
+```
+
+We can also discretize the data into several intervals, which means transfer the continus numerical data into factor data, for example:
+
+```{r}
+minO2 <- equal.count(na.omit(algae$mnO2), number = 4, overlap = 1/5)
+stripplot(season ~ a3|minO2, data=algae[!is.na(algae$mnO2),])
+```
+Then we go to the missing value process.
+```{r}
+#caculate the numbers of lines with missing value
+algae[!complete.cases(algae),]
+nrow(algae[!complete.cases(algae),])
+#delete the lines with missing values
+#algae <- na.omit(algae)
+
+data(algae)
+algae <- algae[-manyNAs(algae),]
+algae <- centralImputation(algae)
+
+#cor(algae[, 4:18], use = "complete.obs")
+symnum(cor(algae[, 4:18], use = "complete.obs"))
+
+data(algae)
+algae <- algae[-manyNAs(algae),]
+lm(PO4 ~ oPO4, data = algae)
+
+algae[28, "PO4"] <- 42.897 + 1.293 * algae[28, "oPO4"]
+
+data(algae)
+algae <- algae[-manyNAs(algae),]
+fillPO4 <- function(oP){
+        if(is.na(oP))
+                return(NA)
+        else return(42.897 + 1.293 * oP)
+}
+
+algae[is.na(algae$PO4), "PO4"] <- sapply(algae[is.na(algae$PO4), "oPO4"], fillPO4)
+
+histogram(~mxPH | season, data = algae)
+
+algae$season <- factor(algae$season, levels = c("spring", "summer", "autumn", "winter"))
+histogram(~mxPH | season, data = algae)
+
+histogram(~mxPH | size * speed, data =algae)
+
+stripplot(size ~ mxPH | speed, data = algae, jitter = T)
+```
+
+If we assume the two kinds of water were similar, then in one sample there were some missing value, the missing value might be similar to the correspond one in the other kind of water.
+
+```{r}
+data(algae)
+algae <- algae[-manyNAs(algae),]
+
+#algae <- knnImputation(algae, k = 10)
+#or
+algae <- knnImputation(algae, k = 10, meth = "median")
+```
+
+First we build a multivariate analysis for prediction
+```{r}
+data(algae)
+algae <- algae[-manyNAs(algae),]
+clean.algae <- knnImputation(algae, k = 10)
+
+lm.al <- lm(a1 ~., data = clean.algae[,1:12])
+summary(lm.al)
 ```
