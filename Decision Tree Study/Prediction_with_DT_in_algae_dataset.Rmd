@@ -126,6 +126,41 @@ data(algae)
 algae <- algae[-manyNAs(algae),]
 clean.algae <- knnImputation(algae, k = 10)
 
-lm.al <- lm(a1 ~., data = clean.algae[,1:12])
-summary(lm.al)
+lm.a1 <- lm(a1 ~., data = clean.algae[,1:12])
+summary(lm.a1)
+```
+Use anova() to simplify the model, when anova() was adopted into the simple linear model, this function provide a Sequential analysis of variance.
+
+```{r}
+library(stats)
+anova(lm.a1)
+```
+
+From the result we can see that season contibute least for the error of fitting, then we delete it from the model.
+```{r}
+lm2.a1 <- update(lm.a1, .~ .-season)
+summary(lm2.a1)
+```
+
+Then let's consider a comparison between model1 and model2.
+```{r}
+anova(lm.a1,lm2.a1)
+
+```
+
+From the F-test to the anova analysis of the 2 models, the two models were significant different. Then we continue to do the variable remove process. In R we use 
+
+```{r}
+final.lm <- step(lm.a1)
+summary(final.lm)
+```
+
+From which we can see that the R-square is still not high, which means it's not appropriate for the prediction using multivariate analysis.
+```{r}
+library(rpart)
+data(algae)
+algae <- algae[-manyNAs(algae),]
+rt.a1 <- rpart(a1 ~., data = algae[, 1:12])
+prettyTree(rt.a1)
+
 ```

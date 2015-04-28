@@ -1,0 +1,60 @@
+---
+title: "Linear Regression"
+author: "Yan Yan"
+date: "April 28, 2015"
+output: html_document
+---
+
+The MASS library contains the Boston data set, which records medv (median house value) for 506 neighborhoods around Boston. We will seek to predict medv using 13 predictors sunch as rm (avarage number of rooms per house), age (average age of houses), and lstat (percent of households with low socioeconomic status).
+
+```{r}
+library(MASS)
+names(Boston)
+```
+
+Use lm() function to fit a simple linear regression model.
+
+```{r}
+lm.fit = lm(medv ~ lstat, data = Boston)
+```
+ 
+or we can use 
+```{r,eval=FALSE}
+attach(Boston) #attach Boston then R now recognizes the variables.
+lm.fit = lm(medv ~ lstat)
+```
+
+so we can get the result via
+```{r}
+lm.fit
+summary(lm.fit)
+```
+
+We can use the names() function in order to find out what other pieces of information are stored in lm.fit, or we can use these quantities by name - e.g. lm.fit$coefficients, it is safer to use the extractor functions like coef() to access them.
+
+```{r}
+names(lm.fit)
+coef(lm.fit)
+```
+
+In order to obtain a confidence interval for the coefficient estimates, we can use the confint() command.
+
+```{r}
+confint(lm.fit)
+```
+
+The prediction() function can be used to produce confience intervals and prediction intervals for the prediction of medv for a given value of lstat
+```{r}
+predict(lm.fit, data.frame(lstat=(c(5,10,15))), interval = "confidence")
+predict(lm.fit, data.frame(lstat=(c(5,10,15))), interval = "prediction")
+
+```
+
+Plot medv and lstat along with the least squares regression line using the plot() and abline() functions.
+```{r}
+attach(Boston)
+plot(lstat, medv)
+abline(lm.fit, lwd =3, col = "red")
+```
+
+
