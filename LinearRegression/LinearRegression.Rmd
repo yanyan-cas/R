@@ -57,4 +57,116 @@ plot(lstat, medv)
 abline(lm.fit, lwd =3, col = "red")
 ```
 
+Plot the residuals against the fitted values.
+```{r}
+plot(predict(lm.fit), residuals(lm.fit))
+plot(predict(lm.fit), rstudent(lm.fit))
+```
+On the basis of the residual plots, there is some evidence of non-linearity.
 
+Leverage statistics can be computed for any number of predictors using the hatvalues() function.
+
+```{r}
+plot(hatvalues(lm.fit))
+which.max(hatvalues(lm.fit)) #identify the index of the largest element of a vector.
+```
+
+#Multiple Linear Regression
+To fit a multiple linear regression model using least squares, use lm() like:
+```{r}
+lm.fit = lm(medv ~ lstat + age, data = Boston)
+summary(lm.fit)
+```
+also we can use 
+```{r}
+lm.fit = lm(medv ~., data = Boston)
+summary(lm.fit)
+```
+to consider all 13 variables as predictors.
+
+The vif() function can be used to compute variance inflation factors.
+```{r}
+library(car)
+vif(lm.fit)
+```
+
+An expression to use all predictor but one is:
+```{r}
+lm.fit1 = lm(medv ~.-age, data = Boston)
+summary(lm.fit1)
+```
+
+And the update() function can be used
+```{r}
+lm.fit1 = update(lm.fit, ~.-age)
+```
+
+#Interaction Terms
+The syntax lstat:black tells R to include an interaction term between lstat and black.
+The syntax lstatXage simultaneously includes lstat, age and interaction term lstatXage as predictors.
+```{r}
+summary(lm(medv ~ lstat*age, data = Boston))
+```
+
+#Non-linear Transformations of the Predicros.
+The square of X can be interpreted by using the function I(X^2):
+```{r}
+lm.fit2 = lm(medv ~ lstat + I(lstat^2))
+summary(lm.fit2)
+```
+The near-zero p-value associated with the quadratic term suggests that it leads to an improved model.
+We use anova() function to further quantify the extent to which the quadratic fit is superior to the linear fit.
+```{r}
+lm.fit = lm(medv ~ lstat)
+anova(lm.fit, lm.fit2)
+```
+
+If we type 
+```{r}
+par(mfrow=c(2,2))
+plot(lm.fit2)
+```
+
+then we see that when the lstat^2 term is included in the model, there is little discernible pattern in the residuals.
+
+Use the poly() function to create the polynomial within lm() like:
+```{r}
+lm.fit5=lm(medv ~ poly(lstat,5))
+summary(lm.fit5)
+```
+
+This suggests that including additional polynomial terms, up to fifth order, leads to an improvement in the model fit!
+A log transformation:
+```{r}
+summary(lm(medv~log(rm),data=Boston))
+```
+
+#Qualitative Predictors
+Use the Carseats data 
+```{r}
+library(ISLR)
+data(Carseats)
+names(Carseats)
+```
+
+```{r}
+lm.fit = lm(Sales~.+Income:Advertising + Price:Age, data=Carseats)
+summary(lm.fit)
+```
+
+Use the contrasts() function returns the coding that R uses for the dummy variables.
+
+```{r}
+attach(Carseats)
+contrasts(ShelveLoc)
+```
+
+R has created a ShelveLocGood dummy variable that takes on a value of 1 if the shelving location is good and 0 otherwise. 
+
+It has also created a ShelveLocMedium dummy variable that equals 1 if the shelving location is medium and 0 otherwise.
+
+A bad shelving location corresponds to a zero for each of the two dummy variables. 
+
+The fact that the coefficient for Shelvelocgood in the regression output is positive indicates that a good shelving location is associated with high sales. 
+
+And ShelveLocMedum has a smaller positive coefficient, indicatingthat a medium shelving location leads to higher sales than a bad shelving location but lower sales thatn a good shelving location.
